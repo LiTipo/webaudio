@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Audio Streaming Example</title>
+  </head>
+  <body>
+    <h1>Audio Streaming Example</h1>
+    <audio id="audio" controls></audio>
+
+    <script>
+      // 獲取音頻元素
+      const audio = document.getElementById("audio");
+
+      // 建立音訊內容
+      const audioCtx = new AudioContext();
+
+      // 獲取本地音頻檔案
+      const request = new XMLHttpRequest();
+      request.open('GET', 'testaudio.mp3', true);
+      request.responseType = 'arraybuffer';
+      request.onload = function() {
+        // 解碼音頻數據
+        audioCtx.decodeAudioData(request.response, function(buffer) {
+          // 創建媒體元素源節點
+          const source = audioCtx.createMediaElementSource(audio);
+          // 創建聲道平衡節點
+          const panNode = new StereoPannerNode(audioCtx, { pan: -1 });
+          // 連接節點
+          source.connect(panNode).connect(audioCtx.destination);
+          // 設置音訊源
+          audio.src = URL.createObjectURL(new Blob([request.response], { type: 'audio/mp3' }));
+          // 將左聲道增加到最大
+          panNode.pan.setValueAtTime(-1, audioCtx.currentTime);
+        });
+      };
+      request.send();
+    </script>
+  </body>
+</html>
